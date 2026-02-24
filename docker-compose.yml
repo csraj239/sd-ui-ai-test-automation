@@ -1,0 +1,152 @@
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: sd-postgres
+    environment:
+      POSTGRES_USER: sa
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sd_test_automation_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - sd-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sa"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Message Queue
+  redis:
+    image: redis:7.4-alpine
+    container_name: sd-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sd-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # MinIO Object Storage
+  minio:
+    image: minio/minio:latest
+    container_name: sd-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - sd-network
+    command: minio server /data --console-address ":9001"
+
+  # Backend API Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sd-backend
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: sa
+      DB_PASSWORD: password
+      DB_DATABASE: sd_test_automation_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: your-secret-key-change-in-production
+      AZURE_OPENAI_ENDPOINT: https://genaipoc-sd.openai.azure.com/
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_API_VERSION: 2023-03-15-preview
+      AZURE_DEPLOYMENT_NAME: gpt-4o
+      OPENAI_API_TYPE: azure
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: test-artifacts
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sd-network
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run start:dev
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sd-frontend
+    environment:
+      VITE_API_URL: http://localhost:3001/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - sd-network
+    volumes:
+      - ./frontend/src:/app/src
+    command: npm run dev -- --host 0.0.0.0
+
+  # Test Executor Service
+  executor:
+    build:
+      context: ./executor
+      dockerfile: Dockerfile
+    container_name: sd-executor
+    environment:
+      NODE_ENV: development
+      API_URL: http://backend:3001/api
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AZURE_OPENAI_ENDPOINT: https://genaipoc-sd.openai.azure.com/
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_API_VERSION: 2023-03-15-preview
+      AZURE_DEPLOYMENT_NAME: gpt-4o
+      OPENAI_API_TYPE: azure
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: test-artifacts
+    depends_on:
+      - redis
+      - backend
+    networks:
+      - sd-network
+    volumes:
+      - ./executor/src:/app/src
+      - test_artifacts:/artifacts
+
+networks:
+  sd-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  test_artifacts:
