@@ -11,7 +11,7 @@
 ### Step 1: Pull Azure OpenAI Credentials
 ```bash
 # Set the OpenAI API key
-export OPENAI_API_KEY="5z3f4jOI9J4yxJGrHwCjq8UrHaJPU4m5ogNPcaRWhoQng5MkUQfqJQQJ99AJACYeBjFXJ3w3AAABACOGviNg"
+export OPENAI_API_KEY=""
 ```
 
 ### Step 2: Start All Services
