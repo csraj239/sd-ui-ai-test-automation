@@ -15,11 +15,7 @@ services:
       - ./postgres-init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - sd-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sa"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+
 
   # Redis Cache & Message Queue
   redis:

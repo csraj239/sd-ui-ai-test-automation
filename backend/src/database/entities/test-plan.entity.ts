@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Project } from './project.entity';
 import { TestScenario } from './test-scenario.entity';
+import { UserFlow } from './user-flow.entity';
 
 @Entity('test_plans')
 export class TestPlan {
@@ -37,6 +38,9 @@ export class TestPlan {
   @Column({ type: 'uuid' })
   projectId!: string;
 
+  @Column({ type: 'uuid', nullable: true })
+  userFlowId!: string; // Selected user flow for this test plan
+
   @CreateDateColumn()
   createdAt!: Date;
 
@@ -48,6 +52,10 @@ export class TestPlan {
   })
   @JoinColumn({ name: 'projectId' })
   project!: Project;
+
+  @ManyToOne(() => UserFlow, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'userFlowId' })
+  userFlow?: UserFlow;
 
   @OneToMany(() => TestScenario, (scenario: any) => scenario.testPlan, {
     cascade: true,

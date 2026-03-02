@@ -5,3 +5,5 @@ export { ScriptScenario } from './script-scenario.entity';
 export { TestSuite } from './test-suite.entity';
 export { TestExecution } from './test-execution.entity';
 export { ExecutionReport } from './execution-report.entity';
+export { UserFlow } from './user-flow.entity';
+export { UserFlowStep } from './user-flow-step.entity';

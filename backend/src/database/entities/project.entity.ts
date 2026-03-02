@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { TestPlan } from './test-plan.entity';
+import { UserFlow } from './user-flow.entity';
 
 @Entity('projects')
 export class Project {
@@ -36,4 +37,10 @@ export class Project {
     eager: false,
   })
   testPlans!: TestPlan[];
+
+  @OneToMany(() => UserFlow, (userFlow: any) => userFlow.project, {
+    cascade: true,
+    eager: false,
+  })
+  userFlows!: UserFlow[];
 }

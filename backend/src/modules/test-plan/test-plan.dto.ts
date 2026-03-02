@@ -20,6 +20,10 @@ export class CreateTestPlanDto {
 
   @IsUUID()
   projectId: string;
+
+  @IsUUID()
+  @IsOptional()
+  userFlowId?: string; // Optional reference to a user flow
 }
 
 export class UpdateTestPlanDto {
@@ -38,6 +42,10 @@ export class UpdateTestPlanDto {
   @IsString()
   @IsOptional()
   prompt?: string;
+
+  @IsUUID()
+  @IsOptional()
+  userFlowId?: string;
 }
 
 export class GeneratePlanDto {
@@ -50,4 +58,8 @@ export class GeneratePlanDto {
   @IsString()
   @IsOptional()
   prompt?: string;
+
+  @IsUUID()
+  @IsOptional()
+  userFlowId?: string;
 }

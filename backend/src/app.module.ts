@@ -9,6 +9,7 @@ import { ExecutionModule } from './modules/execution/execution.module';
 import { ReportModule } from './modules/report/report.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PlaywrightModule } from './modules/playwright/playwright.module';
+import { UserFlowModule } from './modules/user-flow/user-flow.module';
 import { DatabaseModule } from './database/database.module';
 import { QueueModule } from './queue/queue.module';
 
@@ -29,6 +30,7 @@ import { QueueModule } from './queue/queue.module';
     ExecutionModule,
     ReportModule,
     PlaywrightModule,
+    UserFlowModule,
   ],
 })
 export class AppModule {}
